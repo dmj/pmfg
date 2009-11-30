@@ -1,0 +1,219 @@
+#!/usr/bin/ruby
+##
+# == About
+#
+# The Poor Man's Feed Generator or pmfg for short is a simple ruby
+# script that parses a structured input file and creates an atom feed
+# for this file.
+#
+# The idea for this script evolved while chatting with a friend who
+# maintains a small list of links on business education and I mocked
+# about not having a feed available. After writing a first prototype I
+# realized that such a script is not just helping you to get an atom
+# feed for one of /your/ webpages but also to create feeds for /other
+# people's/ pages that for some reason don't provide one.
+#
+# If the input file is parseble with regular expressions, pmfg is
+# capable of producing a feed. As pmfg uses a yaml-file as
+# intermediate format you may add information to the feed that maybe
+# not present in the input file (such as the feed's id and the like).
+#
+# == Copyright
+#
+# Copyright 2009 by David Maus <maus.david@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##
+
+require 'optparse'
+require 'ostruct'
+require 'rexml/document'
+require 'rss/atom'
+require 'yaml'
+
+@version = "0.1"
+
+@scrape = {
+  'header' => [
+               { 'regexp' => %r{<title>(.+)</title>},
+                 'map' => { 'title' => 0 } },
+               { 'regexp' => %r{<h3>Information</h3>[ \t]*(.+)<},
+                 'map' => { 'summary' => 0 } },
+               { 'regexp' => %r{<meta name="author" content="(.+)"},
+                 'map' => { 'author' => { 'name' => 0 } } },
+              ],
+  'items' => [
+              { 'regexp' => %r{<li>[ \t]*<a href="(.+)".*?>(.+)</a>},
+                'map' => { 'link' => 0, 'id' => 0, 'title' => 1 } }
+              ] }
+
+def scrape()
+
+  feed = { 'header' => [], 'items' => [] }
+  content = String.new
+
+  open(@opt.input) { |f| content = f.readlines().join() }
+
+  ## Scrape information
+  @scrape.each_key do |ioh|
+    @scrape[ioh].each do |regexp|
+      content.scan(regexp['regexp']).each do |match|
+        ent = {}
+        regexp['map'].each do |map|
+
+          map_ref = ObjectSpace._id2ref(map[1].object_id)
+          map_ref.is_a?(Fixnum) ? map_val = match[map_ref] : map_val = {}
+          map_val_ref = ObjectSpace._id2ref(map_val.object_id)
+
+          while map_ref.is_a?(Hash)
+            m = map_ref.to_a[0][0]
+            map_ref = ObjectSpace._id2ref(map_ref[m].object_id)
+            map_ref.is_a?(Fixnum) ? map_val_ref[m] = match[map_ref] : map_val_ref[m] = {}
+            map_val_ref = ObjectSpace._id2ref(map_val[m].object_id)
+          end
+
+          ent[map[0]] = map_val
+        end
+        feed[ioh] << ent
+      end
+    end
+  end
+
+  ## Maybe merge previous run
+  if File.exist?(@opt.yaml)
+    prev = YAML.load_file(@opt.yaml)
+    @updated = false
+    prev['items'].each do |item|
+      ic = feed['items'].index { |i| i['id'] == item['id'] }
+      feed['items'][ic]['updated'] = item['updated'] if ic
+      @updated = true if not ic
+    end
+    prev['header'].each do |element|
+      ic = feed['header'].index { |e| e.to_a[0][0] == element.to_a[0][0] }
+      feed['header'] << element if not ic
+    end
+  end
+
+  ## Ensure updated element
+  feed['items'].each { |i| i['updated'] = Time.now if not i['updated'] }
+  h = feed['header'].index { |e| e.to_a[0][0] == 'updated' }
+  if @updated
+    h ? feed['header'][h] = Time.now : feed['header'] << { 'updated' => Time.now }
+  end
+
+  ## Sort items by date
+  feed['items'].sort! { |a,b| b['updated'] <=> a['updated'] }
+
+  File.open(@opt.yaml, 'w') { |o| o.puts(YAML.dump(feed)) }
+
+end
+
+def atom()
+
+  yaml = YAML.load_file(@opt.yaml)
+
+  feed = REXML::Document.new()
+  feed << REXML::XMLDecl.new()
+
+  atom = feed.add_element('feed', { 'xmlns' => 'http://www.w3.org/2005/Atom' })
+
+  ## Feed header elements
+  yaml['header'].each do |element|
+    key = element.to_a[0][0]
+    case key
+      when "link"
+        atom.add_element('link', { 'href' => element['link'] })
+      when "feed-link":
+        atom.add_element('link', 
+                         { 'href' => "#{element['feed-link']}",
+                           'rel' => 'self',
+                           'type' => 'application/atom+xml'})
+      when "updated":
+        atom.add_element('updated').add_text(element['updated'].xmlschema)
+      else
+        atom_ref = ObjectSpace._id2ref(atom.object_id)
+        elem_ref = ObjectSpace._id2ref(element.object_id)
+        elem_var = element.to_a[0][1]
+
+        while elem_ref.to_a[0][1].is_a?(Hash)
+          e = elem_ref.to_a[0][0]
+          atom_ref = atom_ref.add_element(e)
+          elem_ref = ObjectSpace._id2ref(elem_ref[e].object_id)
+          elem_var = elem_ref.to_a[0][1]
+        end
+        
+        atom_ref.add_element(elem_ref.to_a[0][0]).add_text(elem_var)
+    end
+  end
+
+  0.upto(@opt.items - 1) do |n|
+    item = yaml['items'][n]
+    atom_item = atom.add_element('entry')
+    item.each_key do |element|
+      case element
+        when 'link':
+          atom_item.add_element('link', { 'href' => item['link'] })
+        when "updated":
+          atom_item.add_element('updated').add_text(item[element].xmlschema)
+        else
+          ## TODO: Do the nested-items-dance!
+          atom_item.add_element(element).add_text(item[element])
+      end
+    end
+  end
+
+  RSS::Parser.parse(feed.to_s)
+
+  @opt.atom.is_a?(String) ? File.open(@opt.atom, 'w') { |o| o.puts(feed.to_s) } : puts(feed.to_s)
+
+end
+
+## Default options
+@opt = OpenStruct.new()
+@opt.input = false
+@opt.yaml = "feed.yaml"
+@opt.atom = false
+@opt.rss = false
+@opt.items = 15
+
+@updated = true
+
+## Parse command line
+opts = OptionParser.new()
+opts.banner="Usage: pmfg [options] <inputfile> [<outputfile>]"
+opts.on('-y', '--yaml-file <file>', 'use <file> to store intermediate data',
+        "(default: #{@opt.yaml})" ) { |file| @opt.yaml = file }
+
+opts.on('-i', '--items <number>', 'number of items per feed') { |nr| @opt.items = nr }
+
+opts.on('--regexp <file>', 'load custom regular expressions for scraper') { |file| @scrape = YAML.load_file(file) }
+
+opts.on('--regexp-dump', 'dump default regular expressions to STDOUT') { puts YAML.dump(@scrape); exit 0 }
+
+opts.on_tail('-h', '--help', 
+             'display this help and exit') { puts opts; exit 0 }
+
+opts.parse!
+
+@opt.input = ARGV.shift
+@opt.atom = ARGV.shift
+
+if (ARGV.size > 0) or (not @opt.input)
+  puts opts
+  exit 0
+end
+
+scrape()
+atom()
