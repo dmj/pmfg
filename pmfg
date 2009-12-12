@@ -43,6 +43,8 @@ require 'rexml/document'
 require 'rss/atom'
 require 'yaml'
 
+require 'uuidtools'
+
 @version = "0.1"
 
 @scrape = {
@@ -65,6 +67,9 @@ def scrape()
   content = String.new
 
   open(@opt.input) { |f| content = f.readlines().join() }
+
+  ## Normalize
+  content.gsub!(/\n/," ").gsub!(/[  ]/," ")
 
   ## Scrape information
   @scrape.each_key do |ioh|
@@ -110,8 +115,11 @@ def scrape()
   feed['items'].each { |i| i['updated'] = Time.now if not i['updated'] }
   h = feed['header'].index { |e| e.to_a[0][0] == 'updated' }
   if @updated
-    h ? feed['header'][h] = Time.now : feed['header'] << { 'updated' => Time.now }
+    h ? feed['header'][h] = { 'updated' => Time.now } : feed['header'] << { 'updated' => Time.now }
   end
+
+  ## Maybe generate random id
+  feed['items'].each { |i| i['id'] = UUIDTools::UUID.random_create.to_s if not i['id'] }
 
   ## Sort items by date
   feed['items'].sort! { |a,b| b['updated'] <=> a['updated'] }
@@ -174,7 +182,7 @@ def atom()
     end
   end
 
-  RSS::Parser.parse(feed.to_s)
+  RSS::Parser.parse(feed.to_s) if @opt.verify
 
   @opt.atom.is_a?(String) ? File.open(@opt.atom, 'w') { |o| o.puts(feed.to_s) } : puts(feed.to_s)
 
@@ -185,8 +193,9 @@ end
 @opt.input = false
 @opt.yaml = "feed.yaml"
 @opt.atom = false
-@opt.rss = false
 @opt.items = 15
+@opt.uuid_id = false
+@opt.verify = true
 
 @updated = true
 
@@ -201,6 +210,10 @@ opts.on('-i', '--items <number>', 'number of items per feed') { |nr| @opt.items 
 opts.on('--regexp <file>', 'load custom regular expressions for scraper') { |file| @scrape = YAML.load_file(file) }
 
 opts.on('--regexp-dump', 'dump default regular expressions to STDOUT') { puts YAML.dump(@scrape); exit 0 }
+
+opts.on('--uuid-id', 'generate id field by assigning a random uuid') { @opt.uuid_id = true }
+
+opts.on('--no-verify', 'do not verify feed with RSS::Parser' ) { @opt.verify = false }
 
 opts.on_tail('-h', '--help', 
              'display this help and exit') { puts opts; exit 0 }
