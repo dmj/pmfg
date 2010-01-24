@@ -1,0 +1,102 @@
+#+TITLE:     pmfg -- The Poor Man's Feed Generator
+#+AUTHOR:    David Maus
+#+EMAIL:     maus.david [at] gmail.com
+#+DESCRIPTION: A simple ruby script that generates atom feeds based on a structured input file
+#+KEYWORDS: ruby atom feed
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:nil toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+OPTIONS:   author:nil
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+STYLE: <link rel="stylesheet" type="text/css" href="stylesheet.css" />
+#+LINK_UP:   
+#+LINK_HOME: 
+
+* About
+
+  The Poor Man's Feed Generator or pmfg for short is a simple ruby
+  script that parses a structured input file and creates an atom feed
+  for this file.
+
+  The idea for this script evolved while chatting with a [[http://www.michael-goller.eu/][friend]] who
+  maintains a small list of links regarding business education and I
+  mocked about not having a feed available. After writing a first
+  prototype I realized that such a script is not just helping you to
+  get an atom feed for one of /your/ webpages but also to create feeds
+  for /other people's/ pages that for some reason don't provide one.
+
+  If the input file is parseable with regular expressions, pmfg is
+  capable of producing a feed. As pmfg uses a [[http://www.yaml.org][yaml]]-file as
+  intermediate format you can add information to the feed that maybe
+  not present in the input file (such as the feed's id).
+
+* Get it
+
+  The Poor Man's Feed Generator is currently maintained in a git
+  repository at github.com.
+
+  URL: [[http://github.com/dmj/pmfg][github.com/dmj/pmfg]]
+
+* Usage
+
+  #+BEGIN_EXAMPLE
+  Usage: pmfg [options] <inputfile> [<outputfile>]
+    -y, --yaml-file <file>           use <file> to store intermediate data
+                                     (default: feed.yaml)
+        --regexp <file>              load custom regular expressions for scraper
+        --regexp-dump                dump default regular expressions to STDOUT
+    -h, --help                       display this help and exit
+  #+END_EXAMPLE
+
+** TODO Explain the regular expressions
+
+** TODO Provide a more complex real world example
+
+* License
+
+  The Poor Man's Feed Generator is released under the terms of the GNU
+  General Public License 3.0.
+
+* Contact
+
+  maus.david [at] gmail.com
+
+* Todo													      :noexport:
+  :PROPERTIES:
+  :Created:  [2009-11-30 Mo 16:22]
+  :END:
+
+** DONE Re-code the scraper
+
+   - let user freely define regular expressions for arbitrary elements
+
+   - support nested elements
+
+** DONE Re-code the Atom generator
+
+   - use ReXML for feed generation
+
+   - validate feed with RSS::Parser
+
+** DONE Support open-uri to access remote urls
+   :LOGBOOK:
+   - State "DONE"       from "TODO"       [2009-11-30 Mo 16:09]
+   :END:
+   :PROPERTIES:
+   :Created:  [2009-11-30 Mo 16:09]
+   :END:
+
+** TODO Setup repository and webpage on github.com
+
+   - [X] Repository
+
+   - [ ] Project page
+
+   - [X] Adjust stylesheet for html export
+	 ([[file:stylesheet.css]])
+
+** TODO Code cleanup
+
+   - put common tasks in separate functions

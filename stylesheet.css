@@ -1,0 +1,50 @@
+body {
+    background: #222222;
+    font-family: sans;
+    font-size: 1em;
+}
+
+#content {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    background: white;
+    padding: 1em;
+}
+
+.outline-3 {
+    margin: 1em;
+}
+
+#content h1 {
+    font-size: 1.5em;
+    font-weigth: bold;
+}
+
+#content h2 {
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
+.outline-3 {
+    margin: 1em;
+    font-size: 0.75em;
+}
+
+#content h3 {
+    font-weight: bold;
+}
+
+.outline-4 {
+    margin: 1em;
+    font-size: 0.70em;
+}
+
+#content h4 {
+    font-weight: bold;
+}
+
+#postamble {
+    font-size: 0.6em;
+    text-align: right;
+}

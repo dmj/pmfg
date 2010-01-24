@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>pmfg &ndash; The Poor Man's Feed Generator</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2009-11-30 16:55:10 CET"/>
+<meta name="author" content="David Maus"/>
+<meta name="description" content="A simple ruby script that generates atom feeds based on a structured input file"/>
+<meta name="keywords" content="ruby atom feed"/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="stylesheet.css" />
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+
+<h1 class="title">pmfg &ndash; The Poor Man's Feed Generator</h1>
+
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1">About </h2>
+<div class="outline-text-2" id="text-1">
+
+
+<p>
+The Poor Man's Feed Generator or pmfg for short is a simple ruby
+script that parses a structured input file and creates an atom feed
+for this file.
+</p>
+<p>
+The idea for this script evolved while chatting with a <a href="http://www.michael-goller.eu/">friend</a> who
+maintains a small list of links regarding business education and I
+mocked about not having a feed available. After writing a first
+prototype I realized that such a script is not just helping you to
+get an atom feed for one of <i>your</i> webpages but also to create feeds
+for <i>other people's</i> pages that for some reason don't provide one.
+</p>
+<p>
+If the input file is parseable with regular expressions, pmfg is
+capable of producing a feed. As pmfg uses a <a href="http://www.yaml.org">yaml</a>-file as
+intermediate format you can add information to the feed that maybe
+not present in the input file (such as the feed's id).
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2">Get it </h2>
+<div class="outline-text-2" id="text-2">
+
+
+<p>
+The Poor Man's Feed Generator is currently maintained in a git
+repository at github.com.
+</p>
+<p>
+URL: <a href="http://github.com/dmj/pmfg">github.com/dmj/pmfg</a>
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3">Usage </h2>
+<div class="outline-text-2" id="text-3">
+
+
+
+
+
+<pre class="example">Usage: pmfg [options] &lt;inputfile&gt; [&lt;outputfile&gt;]
+  -y, --yaml-file &lt;file&gt;           use &lt;file&gt; to store intermediate data
+                                   (default: feed.yaml)
+      --regexp &lt;file&gt;              load custom regular expressions for scraper
+      --regexp-dump                dump default regular expressions to STDOUT
+  -h, --help                       display this help and exit
+</pre>
+
+
+
+
+
+</div>
+
+<div id="outline-container-3.1" class="outline-3">
+<h3 id="sec-3.1"><span class="todo TODO"> TODO</span> Explain the regular expressions </h3>
+<div class="outline-text-3" id="text-3.1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3.2" class="outline-3">
+<h3 id="sec-3.2"><span class="todo TODO"> TODO</span> Provide a more complex real world example </h3>
+<div class="outline-text-3" id="text-3.2">
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4">License </h2>
+<div class="outline-text-2" id="text-4">
+
+
+<p>
+The Poor Man's Feed Generator is released under the terms of the GNU
+General Public License 3.0.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5">Contact </h2>
+<div class="outline-text-2" id="text-5">
+
+
+<p>
+maus.david [at] gmail.com
+</p>
+</div>
+</div>
+<div id="postamble">
+<p class="date"> Date: 2009-11-30 16:55:10 CET</p>
+<p class="creator">HTML generated by org-mode 6.33trans in emacs 23</p>
+</div>
+</div>
+</body>
+</html>
